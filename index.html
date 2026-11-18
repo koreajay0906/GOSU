@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ko" style="--print-scale: 0.90;">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GOSU 공부 시간표 스케줄러</title>
+  <link rel="icon" type="image/png" href="./images/gosu_logo.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <!-- 메인 앱 화면 (로그인 없이 즉시 접속) -->
+  <div id="appShell" class="app-shell is-ready">
+    <!-- 좌측 제어판 -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <h2>📋 시간표 편집기</h2>
+        <span class="db-status-badge" id="dbStatusBadge" title="Supabase DB 연동됨">● 온라인 연동</span>
+      </div>
+
+      <div class="btn-row">
+        <button type="button" class="btn-save" onclick="saveToOnline()">☁️ 시간표 저장</button>
+        <button type="button" class="btn-list" onclick="toggleOnlineList()">📂 시간표 목록보기</button>
+      </div>
+
+      <div class="form-group">
+        <label for="studentName">👤 학생 이름</label>
+        <input type="text" id="studentName" placeholder="학생 이름을 입력하세요" oninput="updateHeaderAndSaveDraft()" />
+      </div>
+
+      <div class="form-group">
+        <label>📅 달력 기간 설정 (시작일 기준 1개월 고정)</label>
+        <div class="date-row">
+          <input type="date" id="startDateInput" onchange="onStartDateChange()" />
+          <span>~</span>
+          <input type="date" id="endDateInput" disabled tabindex="-1" title="시작일로부터 1개월 뒤로 자동 고정됩니다." />
+        </div>
+      </div>
+
+      <!-- 선택된 칸 서식 조정 -->
+      <div class="selection-box">
+        <div class="selection-status" id="selectionStatus">선택된 칸: 0개</div>
+        <label style="margin-bottom:4px;">🔎 선택한 칸 글자 크기</label>
+        <div class="font-btn-group">
+          <button type="button" class="font-btn" data-size="8px" onclick="applyFontSizeToSelected('8px')">8px</button>
+          <button type="button" class="font-btn" data-size="9.5px" onclick="applyFontSizeToSelected('9.5px')">9.5px</button>
+          <button type="button" class="font-btn" data-size="11px" onclick="applyFontSizeToSelected('11px')">11px</button>
+          <button type="button" class="font-btn" data-size="12.5px" onclick="applyFontSizeToSelected('12.5px')">12.5px</button>
+          <button type="button" class="font-btn" data-size="14px" onclick="applyFontSizeToSelected('14px')">14px</button>
+        </div>
+      </div>
+
+      <div class="shortcut-guide">
+        <strong>💡 단축키 및 사용 팁</strong><br />
+        • <strong>요일 헤더(월~일) 클릭:</strong> 해당 요일 전체 선택<br />
+        • <strong>마우스 드래그 / Ctrl+클릭:</strong> 범위 및 다중 선택<br />
+        • <strong>Tab / Shift+Tab:</strong> 다음·이전 칸 이동<br />
+        • <strong>Ctrl+C / Ctrl+V:</strong> 칸 내용·글자 크기 복사·붙여넣기<br />
+        • <strong>Ctrl+Z / Ctrl+Y:</strong> 실행 취소 / 다시 실행<br />
+        • <strong>Delete (다중 선택 시):</strong> 선택된 칸 일괄 비우기
+      </div>
+
+      <div class="form-group">
+        <label for="printScale">🖨️ PDF / 인쇄 배율</label>
+        <div class="print-scale-row">
+          <input type="range" id="printScale" min="0.6" max="1.0" step="0.01" value="0.9" oninput="updatePrintScale(this.value)" />
+          <span class="print-scale-val" id="printScaleValue">90%</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <button type="button" class="btn-clear" onclick="clearAll()">🔄 전체 내용 초기화</button>
+      </div>
+
+      <button type="button" class="btn-print" onclick="window.print()">🖨️ 인쇄 / PDF 저장</button>
+    </div>
+
+    <!-- 중앙 달력 본문 -->
+    <div class="main-content">
+      <div class="scheduler-print-area">
+        <div class="title-area">
+          <!-- 로고 이미지 영역 (images/gosu_logo.png 교체 시 자동 반영) -->
+          <div id="brandLogoArea" class="brand-badge">
+            <img
+              src="./images/gosu_logo.png"
+              alt="GOSU 로고"
+              class="logo-img"
+              onerror="this.style.display='none'; document.getElementById('brandFallbackText').style.display='inline-block';"
+            />
+            <span id="brandFallbackText" class="brand-fallback" style="display:none;">GOSU STUDY</span>
+          </div>
+          <div class="title-right">
+            <h1 id="calendarTitle">공부 시간표를 작성해 주세요</h1>
+            <p id="calendarSubtitle"></p>
+          </div>
+        </div>
+        <div id="calendarBody"></div>
+      </div>
+    </div>
+
+    <!-- 우측 온라인 시간표 목록 패널 -->
+    <div id="onlineSidePanel" class="online-side-panel">
+      <div class="online-panel-header">
+        <h3>☁️ 온라인 시간표 목록</h3>
+        <button type="button" class="online-panel-close" onclick="closeOnlineList()" title="닫기">✕</button>
+      </div>
+      <div class="online-search-box">
+        <input type="text" id="onlineSearchInput" placeholder="학생 이름으로 검색..." oninput="filterOnlineSchedules()" />
+      </div>
+      <div id="onlineListBody" class="online-panel-body"></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast">알림</div>
+
+  <script src="./js/supabase-config.js"></script>
+  <script src="./js/script.js"></script>
+</body>
+</html>
