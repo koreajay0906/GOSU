@@ -688,3 +688,32 @@ td.date-cell.selected .cell-editor:empty::before {
     margin: 10mm;
   }
 }
+
+
+/* 달력 셀 드래그 시 브라우저 기본 텍스트 선택 간섭 방지 */
+.calendar-table td {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* 실제 글자를 입력하는 내부 편집 영역만 텍스트 선택 허용 */
+.calendar-table td .cell-editor {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+/* 선택된 셀 강조 */
+.calendar-table td.cell-selected {
+  outline: 2px solid #1a5cff !important;
+  outline-offset: -2px;
+  background-color: #eef4ff !important;
+}
+
+/* 좌측 글자 크기 버튼 동적 하이라이트 */
+.font-size-btn.active,
+.font-btn.active {
+  background-color: #1a5cff !important;
+  color: #ffffff !important;
+  border-color: #1a5cff !important;
+  font-weight: 800;
+}
