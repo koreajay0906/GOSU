@@ -410,7 +410,7 @@ button.secondary:hover {
 }
 
 .brand-badge img {
-  height: 64px;
+  height: 128px;
   width: auto;
   max-width: 160px;
   object-fit: contain;
