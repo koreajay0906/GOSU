@@ -9,31 +9,12 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-  <!-- 로그인 / 회원가입 화면 -->
-  <div id="authScreen" class="auth-screen">
-    <div class="auth-card">
-      <div class="auth-brand">GOSU STUDY</div>
-      <h2>관리자 로그인</h2>
-      <p>학생별 맞춤형 시간표를 작성하고 온라인으로 저장·관리합니다.</p>
-      <div class="auth-form">
-        <input type="email" id="authEmail" placeholder="이메일 주소" autocomplete="email" />
-        <input type="password" id="authPassword" placeholder="비밀번호 (6자 이상)" autocomplete="current-password" onkeydown="if(event.key==='Enter') handleAuth('signIn')" />
-        <div class="auth-actions">
-          <button type="button" onclick="handleAuth('signIn')">로그인</button>
-          <button type="button" class="btn-signup" onclick="handleAuth('signUp')">회원가입</button>
-        </div>
-        <div id="authMessage" class="auth-message"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 메인 앱 화면 -->
-  <div id="appShell" class="app-shell hidden">
+  <!-- 메인 앱 화면 (로그인 없이 즉시 표시) -->
+  <div id="appShell" class="app-shell is-ready">
     <!-- 좌측 제어판 -->
     <div class="sidebar">
       <div class="sidebar-header">
         <h2>📋 시간표 편집기</h2>
-        <button type="button" class="btn-logout" onclick="handleLogout()">로그아웃</button>
       </div>
 
       <div class="btn-row">
