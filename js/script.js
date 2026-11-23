@@ -1,3 +1,7 @@
+// ============================================================
+// GOSU STUDY 공부 시간표 스케줄러 - 전체 동작 스크립트 (js/script.js)
+// ============================================================
+
 let monthlyDatabase = {}; // { "YYYY_M": { [day]: { items: string[], fontSize: string } | string[] } }
 let defaultFontSize = '9.5px';
 let printScale = 0.9;
@@ -88,7 +92,7 @@ function onStartDateChange() {
   updateHeaderAndSaveDraft();
 }
 
-// ── 2. 데이터 읽기 / 쓰기 헬퍼 (기존 배열 형식 및 fontSize 확장 형식 모두 호환) ──
+// ── 2. 데이터 읽기 / 쓰기 헬퍼 ──
 function getCellData(dateStr) {
   const date = parseDateInput(dateStr);
   if (!date) return { text: '', fontSize: defaultFontSize };
@@ -240,7 +244,6 @@ function renderCalendar() {
   });
   html += '</tr></thead><tbody>';
 
-  // 시작일이 속한 주의 일요일부터 종료일이 속한 주의 토요일까지 순회
   const gridStart = new Date(start);
   gridStart.setDate(start.getDate() - start.getDay());
 
@@ -338,7 +341,6 @@ function bindCalendarEvents() {
         }
         syncSelectionUI();
       } else {
-        // 이미 단일 선택된 칸의 텍스트 내부를 클릭해 커서를 옮기는 경우 유지
         if (!(selectedDateStrs.size === 1 && selectedDateStrs.has(dateStr))) {
           selectContinuousRange(dateStr, dateStr);
         }
@@ -422,7 +424,6 @@ function syncSelectionUI() {
     }
   });
 
-  // 선택된 칸들의 글자 크기가 모두 동일할 때만 해당 버튼 활성화
   document.querySelectorAll('.font-btn').forEach((btn) => {
     btn.classList.remove('active');
     if (fontSizes.size === 1) {
@@ -496,7 +497,6 @@ function bindGlobalShortcuts() {
 
     const isMod = e.ctrlKey || e.metaKey;
 
-    // Ctrl+Z (실행 취소) / Ctrl+Shift+Z (다시 실행)
     if (isMod && e.code === 'KeyZ') {
       e.preventDefault();
       if (e.shiftKey) redo();
@@ -504,14 +504,12 @@ function bindGlobalShortcuts() {
       return;
     }
 
-    // Ctrl+Y (다시 실행)
     if (isMod && e.code === 'KeyY') {
       e.preventDefault();
       redo();
       return;
     }
 
-    // Ctrl+C (선택된 칸 복사 - 텍스트 드래그 선택이 없을 때)
     if (isMod && e.code === 'KeyC') {
       const selText = window.getSelection()?.toString() || '';
       if (!selText && selectedDateStrs.size > 0) {
@@ -523,7 +521,6 @@ function bindGlobalShortcuts() {
       return;
     }
 
-    // Ctrl+V (복사된 칸 붙여넣기)
     if (isMod && e.code === 'KeyV') {
       if (cellClipboard.length > 0 && selectedDateStrs.size > 0) {
         e.preventDefault();
@@ -544,7 +541,6 @@ function bindGlobalShortcuts() {
       return;
     }
 
-    // Delete (다중 선택 시 선택된 칸 일괄 비우기)
     if (e.key === 'Delete' && selectedDateStrs.size > 1) {
       e.preventDefault();
       pushUndoState();
@@ -556,7 +552,6 @@ function bindGlobalShortcuts() {
       return;
     }
 
-    // Tab / Shift+Tab (다음·이전 날짜 칸 이동)
     if (e.key === 'Tab') {
       const allCells = Array.from(document.querySelectorAll('.calendar-table td[data-date]'));
       if (allCells.length === 0) return;
@@ -750,7 +745,6 @@ async function saveToOnline() {
   let startDate = document.getElementById('startDateInput')?.value || '';
   let endDate = document.getElementById('endDateInput')?.value || '';
 
-  // 실제로 일정이 입력된 첫날과 마지막날로 기간 계산
   const filledDates = [];
   for (const monthKey in monthlyDatabase) {
     const [year, monthIdx] = monthKey.split('_').map(Number);
