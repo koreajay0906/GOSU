@@ -1,3 +1,6 @@
+/* ============================================================
+   GOSU STUDY 공부 시간표 스케줄러 - 전체 스타일 (css/style.css)
+   ============================================================ */
 * {
   box-sizing: border-box;
 }
@@ -11,16 +14,95 @@ body {
   color: #333;
 }
 
+/* 로그인 화면 */
+.auth-screen {
+  min-height: calc(100vh - 40px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-screen.hidden,
 .app-shell.hidden {
   display: none !important;
 }
 
+.auth-card {
+  width: min(400px, 100%);
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 32px 28px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.auth-brand {
+  font-size: 14px;
+  font-weight: 700;
+  color: #4a90e2;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+
+.auth-card h2 {
+  margin: 0 0 8px;
+  font-size: 22px;
+  color: #1e293b;
+}
+
+.auth-card p {
+  margin: 0 0 20px;
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.auth-form input {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.auth-form input:focus {
+  outline: none;
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.12);
+}
+
+.auth-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.btn-signup {
+  background-color: #64748b;
+}
+
+.btn-signup:hover {
+  background-color: #475569;
+}
+
+.auth-message {
+  margin-top: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  min-height: 18px;
+}
+
 /* 메인 앱 레이아웃 */
 .app-shell {
-  display: flex;
+  display: none;
   gap: 20px;
   align-items: flex-start;
   width: 100%;
+}
+
+.app-shell.is-ready {
+  display: flex;
 }
 
 /* 좌측 사이드바 */
@@ -50,13 +132,16 @@ body {
   color: #2c3e50;
 }
 
-.db-status-badge {
-  font-size: 11px;
-  font-weight: 700;
-  color: #16a34a;
-  background-color: #dcfce7;
-  padding: 4px 9px;
-  border-radius: 20px;
+.btn-logout {
+  width: auto !important;
+  margin: 0 !important;
+  padding: 5px 10px !important;
+  font-size: 12px !important;
+  background-color: #64748b !important;
+}
+
+.btn-logout:hover {
+  background-color: #475569 !important;
 }
 
 .form-group {
@@ -236,33 +321,16 @@ button:hover {
 .title-area {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-end;
   margin-bottom: 14px;
   border-bottom: 2px solid #e2e8f0;
   padding-bottom: 10px;
-  gap: 16px;
 }
 
 .brand-badge {
-  display: flex;
-  align-items: center;
   font-size: 22px;
   font-weight: 700;
   color: #2c3e50;
-  letter-spacing: 1px;
-}
-
-.logo-img {
-  display: block;
-  max-height: 55px;
-  width: auto;
-  object-fit: contain;
-}
-
-.brand-fallback {
-  font-size: 22px;
-  font-weight: 700;
-  color: #0b1b45;
   letter-spacing: 1px;
 }
 
@@ -326,35 +394,8 @@ button:hover {
   height: 150px;
 }
 
-/* 인쇄 넘침(잘림) 경고 스타일 */
-.calendar-table td.date-cell.overflow-warning {
-  box-shadow: inset 0 0 0 2px #f59e0b;
-  background-color: #fffbeb;
-}
-
-.overflow-badge {
-  display: none;
-  position: absolute;
-  bottom: 3px;
-  right: 4px;
-  background-color: rgba(254, 243, 199, 0.96);
-  color: #b45309;
-  border: 1px solid #f59e0b;
-  border-radius: 4px;
-  padding: 1px 5px;
-  font-size: 10px;
-  font-weight: 700;
-  pointer-events: none;
-  user-select: none;
-  z-index: 5;
-}
-
-.calendar-table td.date-cell.overflow-warning .overflow-badge {
-  display: block;
-}
-
 /* 선택된 칸 하이라이트 */
-.calendar-table td.date-cell.selected {
+.calendar-table td.cell-selected {
   outline: 2px solid #2563eb;
   outline-offset: -2px;
   background-color: #eff6ff !important;
@@ -417,8 +458,8 @@ td.sun-cell .cell-editor {
   color: #b91c1c;
 }
 
-td.date-cell:hover .cell-editor:empty::before,
-td.date-cell.selected .cell-editor:empty::before {
+td[data-date]:hover .cell-editor:empty::before,
+td.cell-selected .cell-editor:empty::before {
   content: '클릭하여 입력...';
   color: #cbd5e1;
   font-weight: 400;
@@ -642,8 +683,7 @@ td.date-cell.selected .cell-editor:empty::before {
   }
   .sidebar,
   .online-side-panel,
-  .toast,
-  .overflow-badge {
+  .toast {
     display: none !important;
   }
   .main-content {
@@ -656,25 +696,8 @@ td.date-cell.selected .cell-editor:empty::before {
     max-width: none !important;
     zoom: var(--print-scale, 1);
   }
-  .calendar-table {
-    table-layout: fixed !important;
-  }
-  .calendar-table td {
-    height: 170px !important;
-    box-sizing: border-box;
-  }
-  .date-header {
-    height: 25px;
-  }
-  .logo-img {
-    display: block !important;
-    visibility: visible !important;
-    max-height: 55px;
-  }
-  .calendar-table td.date-cell.selected,
-  .calendar-table td.date-cell.overflow-warning {
+  .calendar-table td.cell-selected {
     outline: none !important;
-    box-shadow: none !important;
     background-color: #ffffff !important;
   }
   .cell-editor {
@@ -687,33 +710,4 @@ td.date-cell.selected .cell-editor:empty::before {
     size: A4 landscape;
     margin: 10mm;
   }
-}
-
-
-/* 달력 셀 드래그 시 브라우저 기본 텍스트 선택 간섭 방지 */
-.calendar-table td {
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-/* 실제 글자를 입력하는 내부 편집 영역만 텍스트 선택 허용 */
-.calendar-table td .cell-editor {
-  user-select: text;
-  -webkit-user-select: text;
-}
-
-/* 선택된 셀 강조 */
-.calendar-table td.cell-selected {
-  outline: 2px solid #1a5cff !important;
-  outline-offset: -2px;
-  background-color: #eef4ff !important;
-}
-
-/* 좌측 글자 크기 버튼 동적 하이라이트 */
-.font-size-btn.active,
-.font-btn.active {
-  background-color: #1a5cff !important;
-  color: #ffffff !important;
-  border-color: #1a5cff !important;
-  font-weight: 800;
 }
