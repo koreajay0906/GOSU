@@ -78,9 +78,7 @@
     <div class="main-content">
       <div class="scheduler-print-area">
         <div class="title-area">
-          <div id="brandLogoArea" class="brand-badge">
-            <img src="./images/gosu_logo.png" alt="GOSU STUDY 로고" />
-          </div>
+          <div id="brandLogoArea" class="brand-badge">GOSU STUDY</div>
           <div class="title-right">
             <h1 id="calendarTitle">공부 시간표를 작성해 주세요</h1>
             <p id="calendarSubtitle"></p>
@@ -89,23 +87,34 @@
         <div id="calendarBody"></div>
       </div>
     </div>
+  </div>
 
-    <!-- 우측 온라인 시간표 목록 패널 -->
-    <div id="onlineSidePanel" class="online-side-panel">
-      <div class="online-panel-header">
-        <h3>☁️ 온라인 시간표 목록</h3>
-        <button type="button" class="online-panel-close" onclick="closeOnlineList()" title="닫기">✕</button>
-      </div>
-      <div class="online-search-box">
-        <input type="text" id="onlineSearchInput" placeholder="학생 이름으로 검색..." oninput="filterOnlineSchedules()" />
-      </div>
-      <div id="onlineListBody" class="online-panel-body"></div>
+  <!-- 화면 정중앙 온라인 시간표 목록 모달 창 -->
+  <div id="onlineModalBackdrop" class="online-modal-backdrop" onclick="closeOnlineList()"></div>
+  <div id="onlineSidePanel" class="online-side-panel" role="dialog" aria-modal="true" aria-labelledby="onlineModalTitle">
+    <div class="online-panel-header">
+      <h3 id="onlineModalTitle">☁️ 온라인 시간표 목록</h3>
+      <button type="button" class="online-panel-close" onclick="closeOnlineList()" title="닫기">✕</button>
     </div>
+    <div class="online-search-box">
+      <input type="text" id="onlineSearchInput" placeholder="학생 이름으로 검색..." oninput="filterOnlineSchedules()" />
+    </div>
+    <div id="onlineListBody" class="online-panel-body"></div>
   </div>
 
   <div id="toast" class="toast">알림</div>
 
   <script src="./js/supabase-config.js"></script>
   <script src="./js/script.js"></script>
+  <script>
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        const shell = document.getElementById('appShell');
+        if (shell && shell.classList.contains('show-online-panel') && typeof closeOnlineList === 'function') {
+          closeOnlineList();
+        }
+      }
+    });
+  </script>
 </body>
 </html>
