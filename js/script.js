@@ -23,9 +23,8 @@ let typingSnapshot = null;
 // 온라인 저장 목록 원본 보관용
 let onlineSchedulesData = [];
 
-// Supabase 상태
+// Supabase 클라이언트
 let supabaseClient = null;
-let currentUser = null;
 
 // ── 1. 초기화 ──
 window.addEventListener('DOMContentLoaded', () => {
@@ -34,7 +33,6 @@ window.addEventListener('DOMContentLoaded', () => {
   updateHeaderAndSaveDraft();
   updatePrintScale(printScale);
   bindGlobalShortcuts();
-  initAuthFlow();
 });
 
 function formatDateInput(date) {
@@ -594,7 +592,7 @@ function showToast(msg) {
 }
 
 // ============================================================
-// 9. Supabase 인증 및 온라인 시간표 저장 · 목록 · 검색 · 불러오기
+// 9. Supabase 온라인 시간표 저장 · 목록 · 검색 · 불러오기 (비로그인)
 // ============================================================
 function getSupabaseClient() {
   if (typeof window.supabase === 'undefined') {
@@ -616,130 +614,9 @@ function getSupabaseClient() {
   return supabaseClient;
 }
 
-function showAppShell() {
-  const authScreen = document.getElementById('authScreen');
-  const appShell = document.getElementById('appShell');
-  if (authScreen) authScreen.classList.add('hidden');
-  if (appShell) {
-    appShell.classList.remove('hidden');
-    appShell.classList.add('is-ready');
-  }
-}
-
-function showAuthScreen(message = '') {
-  const authScreen = document.getElementById('authScreen');
-  const appShell = document.getElementById('appShell');
-  if (authScreen) authScreen.classList.remove('hidden');
-  if (appShell) {
-    appShell.classList.add('hidden');
-    appShell.classList.remove('is-ready');
-  }
-  const msgEl = document.getElementById('authMessage');
-  if (msgEl) msgEl.textContent = message;
-}
-
-async function initAuthFlow() {
-  const client = getSupabaseClient();
-  if (!client) {
-    showAuthScreen('Supabase 연결 설정을 확인해 주세요.');
-    return;
-  }
-
-  const {
-    data: { session },
-  } = await client.auth.getSession();
-
-  if (session) {
-    currentUser = session.user;
-    showAppShell();
-  } else {
-    showAuthScreen();
-  }
-
-  client.auth.onAuthStateChange((_event, nextSession) => {
-    if (nextSession) {
-      currentUser = nextSession.user;
-      showAppShell();
-    } else {
-      currentUser = null;
-      showAuthScreen('로그아웃되었습니다. 다시 로그인해 주세요.');
-    }
-  });
-}
-
-async function handleAuth(mode) {
-  const client = getSupabaseClient();
-  if (!client) return;
-
-  const email = (document.getElementById('authEmail')?.value || '').trim();
-  const password = document.getElementById('authPassword')?.value || '';
-  const msgEl = document.getElementById('authMessage');
-
-  if (!email || !password) {
-    if (msgEl) {
-      msgEl.textContent = '이메일과 비밀번호를 모두 입력해 주세요.';
-      msgEl.style.color = '#e74c3c';
-    }
-    return;
-  }
-
-  if (mode === 'signUp') {
-    const { data, error } = await client.auth.signUp({ email, password });
-    if (error) {
-      if (msgEl) {
-        msgEl.textContent = error.message;
-        msgEl.style.color = '#e74c3c';
-      }
-      return;
-    }
-    if (data?.session) {
-      currentUser = data.session.user;
-      showAppShell();
-      return;
-    }
-    if (msgEl) {
-      msgEl.textContent = '회원가입이 완료되었습니다. 로그인 버튼을 눌러 주세요.';
-      msgEl.style.color = '#2563eb';
-    }
-    return;
-  }
-
-  const { data, error } = await client.auth.signInWithPassword({ email, password });
-  if (error) {
-    if (msgEl) {
-      msgEl.textContent = `로그인 실패: ${error.message}`;
-      msgEl.style.color = '#e74c3c';
-    }
-    return;
-  }
-
-  if (data?.session) {
-    currentUser = data.session.user;
-    showAppShell();
-  }
-}
-
-async function handleLogout() {
-  const client = getSupabaseClient();
-  if (!client) return;
-  if (!confirm('로그아웃하시겠습니까?')) return;
-
-  const { error } = await client.auth.signOut();
-  if (error) {
-    alert(`로그아웃 오류: ${error.message}`);
-  } else {
-    currentUser = null;
-    showAuthScreen('로그아웃되었습니다.');
-  }
-}
-
 async function saveToOnline() {
   const client = getSupabaseClient();
   if (!client) return;
-  if (!currentUser) {
-    alert('로그인한 사용자만 저장할 수 있습니다.');
-    return;
-  }
 
   const name = (document.getElementById('studentName')?.value || '').trim() || '이름없음';
   let startDate = document.getElementById('startDateInput')?.value || '';
@@ -769,7 +646,6 @@ async function saveToOnline() {
 
   const { error } = await client.from('schedules').insert([
     {
-      owner_id: currentUser.id,
       student_name: name,
       start_date: startDate,
       end_date: endDate,
@@ -802,10 +678,6 @@ function toggleOnlineList() {
 async function openOnlineList() {
   const client = getSupabaseClient();
   if (!client) return;
-  if (!currentUser) {
-    alert('로그인한 사용자만 목록을 볼 수 있습니다.');
-    return;
-  }
 
   const appShell = document.getElementById('appShell');
   if (appShell) appShell.classList.add('show-online-panel');
